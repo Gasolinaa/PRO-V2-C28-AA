@@ -17,7 +17,8 @@ var waterSplashAnimation = [];
 var waterSplashSpritedata, waterSplashSpritesheet;
 
 var isGameOver = false;
-
+var isLaughing = false;
+var backgroundMsc,waterSound, pirateLaughSnd, cannonExplosion
 function preload() {
   backgroundImg = loadImage("./assets/background.gif");
   towerImage = loadImage("./assets/tower.png");
@@ -27,6 +28,10 @@ function preload() {
   brokenBoatSpritesheet = loadImage("assets/boat/broken_boat.png");
   waterSplashSpritedata = loadJSON("assets/water_splash/water_splash.json");
   waterSplashSpritesheet = loadImage("assets/water_splash/water_splash.png");
+  backgroundMsc = loadSound("assets/background_music.mp3");
+  waterSound = loadSound("assets/cannon_water.mp3");
+  pirateLaughSnd = loadSound("assets/pirate_laugh.mp3");
+  cannonExplosion = loadSound("assets/cannon_explosion.mp3");
 }
 
 function setup() {
@@ -70,6 +75,12 @@ function setup() {
 function draw() {
   background(189);
   image(backgroundImg, 0, 0, width, height);
+
+  if(!backgroundMsc.isPlaying()){
+    backgroundMsc.play();
+    backgroundMsc.setVolume(0.05)
+
+  }
 
   Engine.update(engine);
  
@@ -126,6 +137,7 @@ function keyPressed() {
     cannonBall.trajectory = [];
     Matter.Body.setAngle(cannonBall.body, cannon.angle);
     balls.push(cannonBall);
+
   }
 }
 
@@ -135,7 +147,8 @@ function showCannonBalls(ball, index) {
     ball.animate();
     if (ball.body.position.x >= width || ball.body.position.y >= height - 50) {
         ball.remove(index);
-      
+      waterSound.play()
+      waterSound.setVolume(0.05)
     }
   }
 }
@@ -170,6 +183,11 @@ function showBoats() {
       boats[i].animate();
       var collision = Matter.SAT.collides(this.tower, boats[i].body);
       if (collision.collided && !boats[i].isBroken) {
+        if(!isLaughing && !pirateLaughSnd.isPlaying()){
+          pirateLaughSnd.play()
+          pirateLaughSnd.setVolume(0.08)
+          isLaughing = true;
+        }
         isGameOver = true;
         gameOver();
       }
@@ -183,6 +201,8 @@ function showBoats() {
 function keyReleased() {
   if (keyCode === DOWN_ARROW && !isGameOver) {
     balls[balls.length - 1].shoot();
+    cannonExplosion.play();
+    cannonExplosion.setVolume(0.05)
   }
 }
 
